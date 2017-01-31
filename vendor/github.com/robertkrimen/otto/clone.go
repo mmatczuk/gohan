@@ -144,8 +144,8 @@ func (clone *_clone) stash(in _stash) _stash {
 	return in.clone(clone)
 }
 
-func (clone *_clone) property(in _property) _property {
-	out := in
+func (clone *_clone) property(in *_property) *_property {
+	var out _property = *in
 
 	switch value := in.value.(type) {
 	case Value:
@@ -163,7 +163,7 @@ func (clone *_clone) property(in _property) _property {
 		panic(fmt.Errorf("in.value.(Value) != true; in.value is %T", in.value))
 	}
 
-	return out
+	return &out
 }
 
 func (clone *_clone) dclProperty(in _dclProperty) _dclProperty {

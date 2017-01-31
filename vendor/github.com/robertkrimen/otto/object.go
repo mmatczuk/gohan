@@ -10,8 +10,8 @@ type _object struct {
 	prototype  *_object
 	extensible bool
 
-	property      map[string]_property
-	propertyOrder []string
+	property      map[string]*_property
+	propertyOrder []*string
 }
 
 func newObject(runtime *_runtime, class string) *_object {
@@ -19,7 +19,7 @@ func newObject(runtime *_runtime, class string) *_object {
 		runtime:     runtime,
 		class:       class,
 		objectClass: _classObject,
-		property:    make(map[string]_property),
+		property:    make(map[string]*_property),
 		extensible:  true,
 	}
 	return self
@@ -123,7 +123,7 @@ func (self *_object) _exists(name string) bool {
 	return exists
 }
 
-func (self *_object) _read(name string) (_property, bool) {
+func (self *_object) _read(name string) (*_property, bool) {
 	property, exists := self.property[name]
 	return property, exists
 }
@@ -132,10 +132,18 @@ func (self *_object) _write(name string, value interface{}, mode _propertyMode) 
 	if value == nil {
 		value = Value{}
 	}
-	_, exists := self.property[name]
-	self.property[name] = _property{value, mode}
+	p, exists := self.property[name]
+
+	if p == nil {
+		p = &_property{}
+		self.property[name] = p
+	}
+
+	p.value = value
+	p.mode = mode
+
 	if !exists {
-		self.propertyOrder = append(self.propertyOrder, name)
+		self.propertyOrder = append(self.propertyOrder, &name)
 	}
 }
 
@@ -144,7 +152,7 @@ func (self *_object) _delete(name string) {
 	delete(self.property, name)
 	if exists {
 		for index, property := range self.propertyOrder {
-			if name == property {
+			if name == *property {
 				if index == len(self.propertyOrder)-1 {
 					self.propertyOrder = self.propertyOrder[:index]
 				} else {

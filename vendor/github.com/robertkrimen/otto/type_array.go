@@ -42,11 +42,15 @@ func arrayUint32(rt *_runtime, value Value) uint32 {
 
 func arrayDefineOwnProperty(self *_object, name string, descriptor _property, throw bool) bool {
 	lengthProperty := self.getOwnProperty("length")
+	if lengthProperty == nil {
+		return false
+	}
+
 	lengthValue, valid := lengthProperty.value.(Value)
 	if !valid {
 		panic("Array.length != Value{}")
 	}
-	length := lengthValue.value.(uint32)
+	length := arrayUint32(self.runtime, lengthValue)
 	if name == "length" {
 		if descriptor.value == nil {
 			return objectDefineOwnProperty(self, name, descriptor, throw)
