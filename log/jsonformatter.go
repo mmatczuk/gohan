@@ -1,9 +1,9 @@
 package log
 
 import (
-	"io"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/op/go-logging"
 )
@@ -28,5 +28,3 @@ func (f *jsonFormatter) Format(calldepth int, record *logging.Record, output io.
 	fmt.Fprintf(output, "%s\n", resultJSON)
 	return nil
 }
-
-

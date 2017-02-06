@@ -26,14 +26,10 @@ import (
 	"github.com/cloudwan/gohan/util"
 )
 
-var (
-	defaultLoggerName = "unknown"
-	defaultLogLevel = logging.INFO.String()
-)
-
 // Level defines all available log levels for log messages.
 type Level int
 
+// Level values.
 const (
 	CRITICAL Level = iota
 	ERROR
@@ -76,6 +72,11 @@ func NewLogger() Logger {
 func NewLoggerForModule(module string) Logger {
 	return logging.MustGetLogger(module)
 }
+
+var (
+	defaultLoggerName = "unknown"
+	defaultLogLevel   = logging.INFO.String()
+)
 
 // getModuleName returns module name.
 func getModuleName() string {
@@ -155,14 +156,15 @@ func addLevelsToBackend(config *util.Config, prefix string, backend logging.Leve
 	}
 }
 
+// Log formats.
 var (
 	DefaultFormat = "%{color}%{time:15:04:05.000}: %{module} %{level} %{color:reset} %{message}"
-	CliFormat = "%{color}%{message}%{color:reset}"
+	CliFormat     = "%{color}%{message}%{color:reset}"
 )
 
 //SetUpBasicLogging configures logging to output logs to w.
-func SetUpBasicLogging(w io.Writer, format string, modlevs... interface{}) {
-	if len(modlevs) % 2 != 0 {
+func SetUpBasicLogging(w io.Writer, format string, modlevs ...interface{}) {
+	if len(modlevs)%2 != 0 {
 		panic("Invalid number of parameters")
 	}
 
@@ -174,7 +176,7 @@ func SetUpBasicLogging(w io.Writer, format string, modlevs... interface{}) {
 
 	for i := 0; i < len(modlevs); i += 2 {
 		m := modlevs[i].(string)
-		l := modlevs[i].(Level)
+		l := modlevs[i+1].(Level)
 		leveledBackendFormatter.SetLevel(logging.Level(l), m)
 	}
 

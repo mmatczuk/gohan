@@ -20,4 +20,3 @@ func LogFatalPanic(log Logger) {
 		log.Fatalf("Panic %s: %s", err, debug.Stack())
 	}
 }
-
