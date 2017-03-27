@@ -16,14 +16,15 @@
 package migration
 
 import (
-	"fmt"
-
 	"database/sql"
-	"github.com/cloudwan/gohan/log"
-	"github.com/cloudwan/gohan/util"
-	"github.com/pressly/goose"
+	"fmt"
 	"os"
 	"path"
+
+	"github.com/pressly/goose"
+
+	"github.com/cloudwan/gohan/log"
+	"github.com/cloudwan/gohan/util"
 )
 
 var logger = log.NewLogger()
@@ -56,9 +57,7 @@ func readGooseConfig() (dbType, dbConnection, migrationsPath string) {
 	return
 }
 
-func Init() error {
-	logger.Info("migration: init")
-
+func EnsureVersion() error {
 	dbType, dbConnection, migrationsPath := readGooseConfig()
 
 	if err := goose.SetDialect(dbType); err != nil {
@@ -75,8 +74,19 @@ func Init() error {
 	if err != nil {
 		return fmt.Errorf("migration: failed to ensure db version: %s", err)
 	}
+	logger.Info("migration path: %q, db version: %d", migrationsPath, v)
 
-	logger.Info("migration path: %q, version: %d", migrationsPath, v)
+	ms, err := goose.CollectMigrations(migrationsPath, 0, goose.MaxVersion)
+	if err != nil {
+		return fmt.Errorf("migration: failed to list migrations: %s", err)
+	}
+	m, err := ms.Last()
+	if err != nil {
+		return fmt.Errorf("migration: failed to get last migration: %s", err)
+	}
+	if m.Version != v {
+		return fmt.Errorf("migration: version mismatch db version=%d, last migration=%d", v, m.Version)
+	}
 
 	return nil
 }
